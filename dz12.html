@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Captions with Web Speech API</title>
+    <style>
+        /* 자막 컨테이너 스타일 */
+        #captions-container {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: auto;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+        
+        /* 자막 스타일 */
+        .caption {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            font-size: 24px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            margin: 5px 0;
+            max-width: 100%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .caption.japanese {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .caption.english {
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .caption.korean {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="captions-container">
+        <div id="caption-japanese" class="caption japanese"></div>
+        <div id="caption-english" class="caption english"></div>
+        <div id="caption-korean" class="caption korean"></div>
+    </div>
+    <script>
+        // Web Speech API의 SpeechRecognition 인터페이스 사용
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        let currentLanguage = 'korean'; // 기본 언어 설정
+
+        // 음성 인식 결과 처리
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+
+            // 자막 업데이트
+            document.getElementById('caption-japanese').innerText = currentLanguage === 'japanese' ? transcript : '';
+            document.getElementById('caption-english').innerText = currentLanguage === 'english' ? transcript : '';
+            document.getElementById('caption-korean').innerText = currentLanguage === 'korean' ? transcript : '';
+
+            // 언어 감지 및 변경
+            if (/니혼고|Nihongo/.test(transcript)) {
+                setLanguage('ja-JP');
+            } else if (/잉글리쉬|English/.test(transcript)) {
+                setLanguage('en-US');
+            } else if (/韓国語|hankukwo|한국어/.test(transcript)) {
+                setLanguage('ko-KR');
+            }
+        };
+
+        // 음성 인식 언어 설정 및 시작
+        function setLanguage(lang) {
+            if (recognition.lang !== lang) {
+                recognition.lang = lang;
+                recognition.stop();
+                recognition.start();
+                currentLanguage = lang === 'ja-JP' ? 'japanese' :
+                                 lang === 'en-US' ? 'english' :
+                                 'korean';
+            }
+        }
+
+        // 음성 인식 초기 설정: 한국어로 설정
+        setLanguage('ko-KR');
+
+        // 음성 인식 중지 및 오류 처리
+        recognition.onend = () => {
+            console.log('Speech recognition service disconnected');
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error detected:', event.error);
+        };
+    </script>
+</body>
+</html>
