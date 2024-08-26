@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Captions with Web Speech API</title>
+    <style>
+        /* 자막 컨테이너 스타일 */
+        #captions-container {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: auto;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+        
+        /* 자막 스타일 */
+        .caption {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            font-size: 24px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            margin: 5px 0;
+            max-width: 100%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .caption.japanese {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .caption.english {
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .caption.korean {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="captions-container">
+        <div id="caption-japanese" class="caption japanese"></div>
+        <div id="caption-english" class="caption english"></div>
+        <div id="caption-korean" class="caption korean"></div>
+    </div>
+    <script>
+        // Web Speech API의 SpeechRecognition 인터페이스 사용
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US'; // 인식할 언어 설정, 'ja-JP' 또는 'ko-KR'로 변경 가능
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        // 음성 인식 결과 처리
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            // 예제에서는 영어만 표시하지만, 필요에 따라 다른 언어로도 처리 가능
+            document.getElementById('caption-english').innerText = transcript;
+            // 실제 구현에서는 자막의 언어를 인식하여 해당 자막을 업데이트하는 로직을 추가할 수 있습니다.
+        };
+
+        // 음성 인식 시작
+        recognition.start();
+
+        // 음성 인식 중지 및 오류 처리
+        recognition.onend = () => {
+            console.log('Speech recognition service disconnected');
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error detected:', event.error);
+        };
+    </script>
+</body>
+</html>
