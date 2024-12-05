@@ -97,7 +97,7 @@
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
-                document.getElementById('debug').innerText +=  '\nNo speech detected for 10 seconds. Restarting recognition.');
+                document.getElementById('debug').innerText +=  '\nNo speech detected for 10 seconds. Restarting recognition.';
                 recognition.stop();
                 setLanguage('ko-KR'); // 초기 상태로 돌아가기
             }, 10000); // 10초
